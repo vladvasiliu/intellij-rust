@@ -42,7 +42,10 @@ class RsMoveFilesOrDirectoriesProcessor(
 ) {
 
     private val filesToMove: Set<RsFile> = filesOrDirectoriesToMove
-        .filterIsInstance<RsFile>()
+        .map {
+            /** We checked that [adjustForMove] returns not null in [RsMoveFilesOrDirectoriesHandler.canMove] */
+            it.adjustForMove() ?: error("File or directory $it can't be moved")
+        }
         .toSet()
 
     private val elementsToMove = filesToMove.map { ModToMove(it) }
