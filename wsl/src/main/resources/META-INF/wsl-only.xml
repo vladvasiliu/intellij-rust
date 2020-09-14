@@ -1,0 +1,11 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.rust">
+        <remoteSdkValidator implementation="org.rust.wsl.sdk.RsWslSdkValidator"/>
+        <remoteSdkEditor implementation="org.rust.wsl.sdk.RsWslSdkEditor"/>
+        <addSdkProvider implementation="org.rust.wsl.sdk.RsAddWslSdkProvider"/>
+        <remoteProcessStarterManager implementation="org.rust.wsl.RsWslRemoteProcessStarterManager"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <remote.credentialsLanguageContribution implementation="org.rust.wsl.RsWslCredentialsContribution"/>
+    </extensions>
+</idea-plugin>

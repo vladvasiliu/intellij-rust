@@ -19,6 +19,12 @@ object RsSdkComparator : Comparator<Sdk> {
             return -Comparing.compare(o1.name, o2.name)
         }
 
+        val remote1Weight = if (RsSdkUtils.isRemote(o1)) 0 else 1
+        val remote2Weight = if (RsSdkUtils.isRemote(o2)) 0 else 1
+        if (remote1Weight != remote2Weight) {
+            return remote2Weight - remote1Weight
+        }
+
         val detected1Weight = if (o1 is RsDetectedSdk) 0 else 1
         val detected2Weight = if (o2 is RsDetectedSdk) 0 else 1
         if (detected1Weight != detected2Weight) {

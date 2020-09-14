@@ -18,6 +18,8 @@ import org.rust.ide.sdk.flavors.RsSdkFlavor
 import org.rust.ide.sdk.flavors.RustupSdkFlavor
 import org.rust.openapiext.computeWithCancelableProgress
 import org.rust.openapiext.pathAsPath
+import org.rust.remote.RsRemoteSdkAdditionalData
+import org.rust.remote.RsRemoteSdkValidator
 import org.rust.stdext.toPath
 import java.nio.file.Path
 
@@ -60,10 +62,15 @@ private val Sdk.rustData: RsSdkAdditionalData?
 
 object RsSdkUtils {
 
-    fun isInvalid(sdk: Sdk): Boolean {
-        val toolchain = sdk.homeDirectory
-        return toolchain == null || !toolchain.exists()
-    }
+    fun isInvalid(sdk: Sdk): Boolean =
+        if (isRemote(sdk)) {
+            RsRemoteSdkValidator.isInvalid(sdk)
+        } else {
+            sdk.homeDirectory?.exists() != true
+        }
+
+    // PythonSdkType
+    fun isRemote(sdk: Sdk): Boolean = sdk.sdkAdditionalData is RsRemoteSdkAdditionalData
 
     fun getAllRustSdks(): List<Sdk> =
         ProjectJdkTable.getInstance().getSdksOfType(RsSdkType.getInstance())

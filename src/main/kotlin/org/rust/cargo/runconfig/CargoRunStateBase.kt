@@ -6,9 +6,9 @@
 package org.rust.cargo.runconfig
 
 import com.intellij.execution.configurations.CommandLineState
+import com.intellij.execution.configurations.EncodingEnvironmentUtil
 import com.intellij.execution.configurations.PtyCommandLine
 import com.intellij.execution.process.ProcessHandler
-import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.rust.cargo.project.model.CargoProject
 import org.rust.cargo.runconfig.buildtool.CargoPatch
@@ -18,6 +18,8 @@ import org.rust.cargo.runconfig.command.workingDirectory
 import org.rust.cargo.toolchain.Cargo
 import org.rust.cargo.toolchain.CargoCommandLine
 import org.rust.cargo.toolchain.RustToolchain
+import org.rust.ide.sdk.RsSdkUtils
+import org.rust.remote.RsRemoteProcessStarter.startRemoteProcess
 import java.nio.file.Path
 
 abstract class CargoRunStateBase(
@@ -59,13 +61,19 @@ abstract class CargoRunStateBase(
 
     fun startProcess(emulateTerminal: Boolean): ProcessHandler {
         var commandLine = cargo().toColoredCommandLine(environment.project, prepareCommandLine())
+
         if (emulateTerminal) {
             commandLine = PtyCommandLine(commandLine)
                 .withInitialColumns(PtyCommandLine.MAX_COLUMNS)
                 .withConsoleMode(false)
         }
-        val handler = RsKillableColoredProcessHandler(commandLine)
-        ProcessTerminatedListener.attach(handler) // shows exit code upon termination
-        return handler
+
+        val sdk = runConfiguration.sdk
+        if (sdk == null || !RsSdkUtils.isRemote(sdk)) {
+            EncodingEnvironmentUtil.setLocaleEnvironmentIfMac(commandLine)
+            return RsProcessHandler.create(commandLine)
+        }
+
+        return startRemoteProcess(sdk, commandLine, runConfiguration.project, null)
     }
 }

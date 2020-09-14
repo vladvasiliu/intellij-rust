@@ -1004,6 +1004,19 @@
         <extensionPoint qualifiedName="org.rust.sdkFlavor"
                         interface="org.rust.ide.sdk.flavors.RsSdkFlavor"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.rust.addSdkProvider"
+                        interface="org.rust.ide.sdk.add.RsAddSdkProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="org.rust.remoteSdkValidator"
+                        interface="org.rust.remote.RsRemoteSdkValidator"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.rust.remoteSdkEditor"
+                        interface="org.rust.remote.RsRemoteSdkEditor"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.rust.remoteProcessStarterManager"
+                        interface="org.rust.remote.RsRemoteProcessStarterManager"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>

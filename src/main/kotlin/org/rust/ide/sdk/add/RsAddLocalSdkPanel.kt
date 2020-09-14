@@ -21,7 +21,7 @@ import java.awt.BorderLayout
 import java.awt.event.ItemEvent
 import javax.swing.Icon
 
-class RsAddLocalToolchainPanel(private val existingSdks: List<Sdk>) : RsAddToolchainPanel() {
+class RsAddLocalSdkPanel(private val existingSdks: List<Sdk>) : RsAddSdkPanel() {
     override val panelName: String = "Local toolchain"
     override val icon: Icon = RsIcons.RUST
 

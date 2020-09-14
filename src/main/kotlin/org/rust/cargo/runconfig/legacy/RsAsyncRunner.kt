@@ -16,7 +16,6 @@ import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessOutput
-import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.AsyncProgramRunner
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.showRunContent
@@ -112,9 +111,7 @@ abstract class RsAsyncRunner(
         manager.patchCommandLine(runConfiguration, environment, cmd, context)
         manager.patchCommandLineState(runConfiguration, environment, state, context)
 
-        val handler = RsKillableColoredProcessHandler(cmd)
-        ProcessTerminatedListener.attach(handler) // shows exit code upon termination
-
+        val handler = RsProcessHandler.create(cmd)
         manager.attachExtensionsToProcess(runConfiguration, handler, environment, context)
 
         val console = state.consoleBuilder.console
@@ -145,7 +142,7 @@ abstract class RsAsyncRunner(
         val cargo = state.cargo()
 
         val processForUserOutput = ProcessOutput()
-        val processForUser = RsKillableColoredProcessHandler(cargo.toColoredCommandLine(project, command))
+        val processForUser = RsProcessHandler(cargo.toColoredCommandLine(project, command))
 
         processForUser.addProcessListener(CapturingProcessAdapter(processForUserOutput))
 

@@ -9,7 +9,6 @@ import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.showRunContent
 import com.intellij.execution.ui.RunContentDescriptor
@@ -103,9 +102,7 @@ abstract class RsExecutableRunner(
         extensionManager.patchCommandLine(runConfiguration, environment, commandLine, context)
         extensionManager.patchCommandLineState(runConfiguration, environment, state, context)
 
-        val handler = RsKillableColoredProcessHandler(commandLine)
-        ProcessTerminatedListener.attach(handler) // shows exit code upon termination
-
+        val handler = RsProcessHandler.create(commandLine)
         extensionManager.attachExtensionsToProcess(runConfiguration, handler, environment, context)
 
         val console = state.consoleBuilder.console

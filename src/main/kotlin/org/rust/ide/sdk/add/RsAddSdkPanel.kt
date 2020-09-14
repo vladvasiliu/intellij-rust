@@ -15,18 +15,24 @@ import javax.swing.JPanel
 /**
  * Represents the view for adding new Rust SDK. It is used in [RsAddSdkDialog].
  */
-abstract class RsAddToolchainPanel : JPanel(), Disposable {
+abstract class RsAddSdkPanel : JPanel(), Disposable {
     abstract val panelName: String
         @Nls(capitalization = Nls.Capitalization.Title) get
 
     abstract val icon: Icon
+
+    open val sdk: Sdk? = null
+
+    open fun complete(): Unit = Unit
 
     /**
      * Returns the created sdk after closing [RsAddSdkDialog]. The method may
      * return `null` if the dialog was closed or cancelled or if the creation
      * failed.
      */
-    abstract fun getOrCreateSdk(): Sdk?
+    open fun getOrCreateSdk(): Sdk? = sdk
+
+    open fun onSelected(): Unit = Unit
 
     /**
      * Returns the list of validation errors. The returned list is empty if there

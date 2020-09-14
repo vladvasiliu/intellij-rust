@@ -5,6 +5,8 @@
 
 package org.rust.ide.sdk.add
 
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.ui.DialogWrapper
@@ -22,11 +24,11 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 
 class RsAddSdkDialog private constructor(
-    project: Project?,
+    private val project: Project?,
     private val existingSdks: List<Sdk>
 ) : DialogWrapper(project) {
-    private var selectedPanel: RsAddToolchainPanel? = null
-    private var panels: List<RsAddToolchainPanel> = emptyList()
+    private var selectedPanel: RsAddSdkPanel? = null
+    private var panels: List<RsAddSdkPanel> = emptyList()
     private var navigationPanelCardLayout: CardLayout? = null
     private var southPanel: JPanel? = null
 
@@ -36,7 +38,13 @@ class RsAddSdkDialog private constructor(
 
     override fun createCenterPanel(): JComponent {
         val mainPanel = JPanel(JBCardLayout())
-        val panels = listOf(RsAddLocalToolchainPanel(existingSdks))
+        val panels: MutableList<RsAddSdkPanel> = mutableListOf(RsAddLocalSdkPanel(existingSdks))
+        val extendedPanels = RsAddSdkProvider.EP_NAME.extensions
+            .mapNotNull {
+                it.safeCreateView(project, existingSdks)
+                    .registerIfDisposable()
+            }
+        panels.addAll(extendedPanels)
         mainPanel.add(SPLITTER_COMPONENT_CARD_PANE, createCardSplitter(panels))
         return mainPanel
     }
@@ -57,7 +65,7 @@ class RsAddSdkDialog private constructor(
 
     fun getOrCreateSdk(): Sdk? = selectedPanel?.getOrCreateSdk()
 
-    private fun createCardSplitter(panels: List<RsAddToolchainPanel>): Splitter {
+    private fun createCardSplitter(panels: List<RsAddSdkPanel>): Splitter {
         this.panels = panels
         return Splitter(false, 0.25f).apply {
             val cardLayout = CardLayout()
@@ -68,12 +76,12 @@ class RsAddSdkDialog private constructor(
                 }
             }
             val cardsList = JBList(panels).apply {
-                val descriptor = object : ListItemDescriptorAdapter<RsAddToolchainPanel>() {
-                    override fun getTextFor(value: RsAddToolchainPanel): String = value.panelName
-                    override fun getIconFor(value: RsAddToolchainPanel): Icon = value.icon
+                val descriptor = object : ListItemDescriptorAdapter<RsAddSdkPanel>() {
+                    override fun getTextFor(value: RsAddSdkPanel): String = value.panelName
+                    override fun getIconFor(value: RsAddSdkPanel): Icon = value.icon
                 }
 
-                cellRenderer = object : GroupedItemsListRenderer<RsAddToolchainPanel>(descriptor) {
+                cellRenderer = object : GroupedItemsListRenderer<RsAddSdkPanel>(descriptor) {
                     override fun createItemComponent(): JComponent = super.createItemComponent()
                         .apply { border = JBUI.Borders.empty(4, 4, 4, 10) }
                 }
@@ -85,6 +93,8 @@ class RsAddSdkDialog private constructor(
                     val southPanel = southPanel ?: return@addListSelectionListener
                     navigationPanelCardLayout?.show(southPanel, REGULAR_CARD_PANE)
                     rootPane.defaultButton = getButton(okAction)
+
+                    selectedValue.onSelected()
                 }
 
                 selectedPanel = panels.firstOrNull()
@@ -101,7 +111,11 @@ class RsAddSdkDialog private constructor(
         super.dispose()
     }
 
+    private fun <T> T.registerIfDisposable(): T = apply { (this as? Disposable)?.let { Disposer.register(disposable, it) } }
+
     companion object {
+        private val LOG: Logger = Logger.getInstance(RsAddSdkDialog::class.java)
+
         private const val SPLITTER_COMPONENT_CARD_PANE: String = "Splitter"
         private const val REGULAR_CARD_PANE: String = "Regular"
 
@@ -111,6 +125,13 @@ class RsAddSdkDialog private constructor(
 
             val sdk = if (dialog.showAndGet()) dialog.getOrCreateSdk() else null
             sdkAddedCallback(sdk)
+        }
+
+        private fun RsAddSdkProvider.safeCreateView(project: Project?, existingSdks: List<Sdk>): RsAddSdkPanel? = try {
+            createView(project, existingSdks)
+        } catch (e: NoClassDefFoundError) {
+            LOG.info(e)
+            null
         }
     }
 }

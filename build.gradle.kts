@@ -194,6 +194,8 @@ project(":plugin") {
         implementation(project(":intelliLang"))
         implementation(project(":duplicates"))
         implementation(project(":grazie"))
+        implementation(project(":remote"))
+        implementation(project(":wsl"))
     }
 
     tasks {
@@ -402,6 +404,31 @@ project(":grazie") {
     dependencies {
         implementation(project(":"))
         implementation(project(":common"))
+        testImplementation(project(":", "testOutput"))
+        testImplementation(project(":common", "testOutput"))
+    }
+}
+
+project(":remote") {
+    intellij {
+        setPlugins("webDeployment", "remote-run")
+    }
+    dependencies {
+        implementation(project(":"))
+        implementation(project(":common"))
+        testImplementation(project(":", "testOutput"))
+        testImplementation(project(":common", "testOutput"))
+    }
+}
+
+project(":wsl") {
+    intellij {
+        setPlugins("WSL")
+    }
+    dependencies {
+        implementation(project(":"))
+        implementation(project(":common"))
+        implementation(project(":remote"))
         testImplementation(project(":", "testOutput"))
         testImplementation(project(":common", "testOutput"))
     }

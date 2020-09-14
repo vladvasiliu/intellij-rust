@@ -17,7 +17,7 @@ import org.jdom.Element
 import org.rust.ide.sdk.RsSdkAdditionalData
 
 class RsRemoteSdkAdditionalData private constructor(
-    toolchainPath: String,
+    cargoPath: String,
     private val remoteSdkProperties: RemoteSdkPropertiesHolder
 ) : RsSdkAdditionalData(),
     RemoteSdkProperties by remoteSdkProperties,
@@ -31,7 +31,7 @@ class RsRemoteSdkAdditionalData private constructor(
         RemoteConnectionCredentialsWrapper()
 
     init {
-        interpreterPath = toolchainPath
+        interpreterPath = cargoPath
     }
 
     constructor(cargoPath: String) : this(cargoPath, RemoteSdkPropertiesHolder(RUST_HELPERS))

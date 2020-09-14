@@ -1,0 +1,35 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <remote.credentialsLanguageContribution
+                implementation="org.rust.remote.SshConfigCredentialsPythonContribution"/>
+        <remote.credentialsLanguageContribution
+                implementation="org.rust.remote.WebDeploymentCredentialsPythonContribution"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="org.rust">
+        <rustCustomSdkUiProvider implementation="org.rust.remote.RsPathMappingsUiProvider"/>
+        <remoteSkeletonGeneratorFactory implementation="org.rust.remote.RsSshRemoteSkeletonGeneratorFactory"/>
+        <remoteProcessStarterManager implementation="org.rust.remote.RsSshRemoteProcessStarterManager"/>
+        <remoteConsoleProcessCreator implementation="org.rust.remote.console.RsthonConsoleSshProcessCreator"/>
+        <remoteConsoleProcessCreator implementation="org.rust.remote.console.RsthonConsoleVagrantProcessCreator"/>
+        <remoteConsoleProcessCreator implementation="org.rust.remote.console.RsthonConsoleSshConfigProcessCreator"/>
+        <remoteConsoleProcessCreator implementation="org.rust.remote.console.RsthonConsoleWebDeploymentProcessCreator"/>
+        <remoteSdkEditor implementation="org.rust.remote.RsSshSdkEditor"/>
+
+        <rustAddSdkProvider implementation="org.rust.remote.sdk.add.RsAddSshSdkProvider"/>
+        <rustAddSdkProvider implementation="org.rust.remote.sdk.add.RsAddVagrantSdkProvider"/>
+
+        <packageManagerProvider implementation="org.rust.remote.packaging.RsSshPackageManagerProvider"/>
+
+        <projectSynchronizerProvider implementation="org.rust.remote.RsSshProjectSynchronizerProvider"/>
+        <sshInterpreterManager implementation="org.rust.remote.RsthonSshInterpreterManagerImpl"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="RemoteRun">
+        <sshConnectionProvider implementation="org.rust.remote.console.RsRemoteSdkConnectionProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.jetbrains.plugins.remotesdk">
+        <usagesProvider implementation="org.rust.remote.RsRemoteSdkUsagesProvider"/>
+    </extensions>
+</idea-plugin>

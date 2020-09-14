@@ -14,7 +14,9 @@ import com.intellij.openapi.projectRoots.SdkModel
 import com.intellij.openapi.projectRoots.SdkModificator
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Disposer
+import com.intellij.remote.CredentialsTypeUtil.isCredentialsTypeSupportedForLanguage
 import com.intellij.ui.AnActionButtonRunnable
 import com.intellij.ui.CollectionListModel
 import com.intellij.ui.ListSpeedSearch
@@ -26,6 +28,9 @@ import org.rust.cargo.project.settings.rustSettings
 import org.rust.cargo.toolchain.RustToolchain
 import org.rust.ide.sdk.add.RsAddSdkDialog
 import org.rust.openapiext.computeWithCancelableProgress
+import org.rust.remote.RsCredentialsContribution
+import org.rust.remote.RsRemoteSdkAdditionalData
+import org.rust.remote.RsRemoteSdkEditor
 import org.rust.stdext.toPath
 import java.awt.Dimension
 import javax.swing.JComponent
@@ -174,6 +179,60 @@ class RsSdkDetailsDialog(
 
     private fun editSdk() {
         val currentSdk = editableSelectedSdk ?: return
+        if (currentSdk.sdkAdditionalData is RsRemoteSdkAdditionalData) {
+            editRemoteSdk(currentSdk)
+        } else {
+            editSdk(currentSdk)
+        }
+    }
+
+    private fun editRemoteSdk(currentSdk: Sdk) {
+        val modificator = modificators[currentSdk] ?: return
+
+        val existingSdks = projectSdksModel.sdks.toMutableList()
+        existingSdks.remove(currentSdk)
+
+        if (doEditRemoteSdk(effectiveProject, modificator, existingSdks)) {
+            modifiedModificators.add(modificator)
+        }
+    }
+
+    private fun doEditRemoteSdk(project: Project, sdkModificator: SdkModificator, existingSdks: List<Sdk>): Boolean {
+        val data = sdkModificator.sdkAdditionalData
+        check(data is RsRemoteSdkAdditionalData)
+
+        val credentialsType = data.connectionCredentials().remoteConnectionType
+        if (!isCredentialsTypeSupportedForLanguage(credentialsType, RsCredentialsContribution::class.java)) {
+            Messages.showErrorDialog(
+                project,
+                "Cannot load ${credentialsType.name} toolchain. Please make sure corresponding plugin is enabled.",
+                "Failed Loading Toolchain"
+            )
+            return false
+        }
+
+        val dialog = RsRemoteSdkEditor.sdkEditor(data, project, existingSdks)?.apply {
+            setEditing(data)
+            setSdkName(sdkModificator.name)
+        } ?: return false
+
+        if (dialog.showAndGet()) {
+            val newSdk = dialog.getSdk()
+            val newData = newSdk?.sdkAdditionalData as? RsRemoteSdkAdditionalData
+            if (newData != null) {
+                if (newData != data || newSdk.name != sdkModificator.name) {
+                    newData.copyTo(data)
+                    sdkModificator.name = newSdk.name
+                    sdkModificator.homePath = newSdk.homePath
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    private fun editSdk(currentSdk: Sdk) {
         val modificator = modificators[currentSdk] ?: return
         val dialog = RsEditSdkDialog(effectiveProject, modificator) {
             if (isDuplicateSdkName(it, currentSdk)) {
