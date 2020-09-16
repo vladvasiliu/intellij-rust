@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.rust.remote
+package org.rust.remote.sdk.add
 
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.ui.ComponentWithBrowseButton
@@ -16,6 +16,8 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import org.rust.ide.sdk.add.RsAddSdkPanel
+import org.rust.remote.createAndInitRemoteSdk
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
 import java.awt.BorderLayout
 import java.awt.event.ActionListener
 
@@ -31,7 +33,7 @@ abstract class RsAddSdkUsingCredentialsEditor<T>(
 
     override fun onSelected() = credentialsEditor.onSelected()
 
-    override fun validateAll(): List<ValidationInfo> = credentialsEditor.validate()?.let { listOf(it) } ?: emptyList()
+    override fun validateAll(): List<ValidationInfo> = listOfNotNull(credentialsEditor.validate())
 
     private var preparedSdk: Sdk? = null
 
@@ -44,14 +46,8 @@ abstract class RsAddSdkUsingCredentialsEditor<T>(
         credentialsEditor.saveCredentials(credentials)
         sdkAdditionalData.setCredentials(credentialsType.credentialsKey, credentials)
         val createAndInitRemoteSdk = createSdk(sdkAdditionalData)
-        sdkAdditionalData.helpersPath = getHelpersPath(credentials)
         preparedSdk = createAndInitRemoteSdk
     }
-
-    /**
-     * Called once on SDK configuration to obtain path to helpers
-     */
-    protected open fun getHelpersPath(credentials: T): String = "/opt/.rust_helpers"
 
     protected open fun createSdk(additionalData: RsRemoteSdkAdditionalData): Sdk =
         createAndInitRemoteSdk(additionalData, existingSdks)
@@ -59,7 +55,7 @@ abstract class RsAddSdkUsingCredentialsEditor<T>(
     protected fun initUI() {
         layout = BorderLayout()
 
-        val toolchainPathLabel = JBLabel("Rust toolchain path:")
+        val toolchainPathLabel = JBLabel("Toolchain path:")
 
         val form = FormBuilder().addComponent(credentialsEditor.mainPanel)
 
@@ -73,7 +69,7 @@ abstract class RsAddSdkUsingCredentialsEditor<T>(
     }
 
     /**
-     * If return value is not null then interpreter path has "browse" button with this listener.
+     * If return value is not null then toolchain path has "browse" button with this listener.
      */
     abstract fun getBrowseButtonActionListener(): ActionListener
 }

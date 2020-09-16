@@ -7,9 +7,9 @@ package org.rust.wsl.sdk
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
-import org.rust.remote.RsEditRemoteToolchainDialog
-import org.rust.remote.RsRemoteSdkAdditionalData
-import org.rust.remote.RsRemoteSdkEditor
+import org.rust.remote.sdk.RsEditRemoteToolchainDialog
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.RsRemoteSdkEditor
 import org.rust.wsl.isWsl
 
 class RsWslSdkEditor : RsRemoteSdkEditor {

@@ -11,6 +11,7 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
 
 /**
  * For anything but plain code execution consider introducing a separate extension point with implementations for

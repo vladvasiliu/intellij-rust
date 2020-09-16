@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.rust.remote
+package org.rust.remote.sdk
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
@@ -13,6 +13,7 @@ import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.remote.RemoteSdkException
 import com.intellij.remote.RemoteSdkFactoryImpl
 import org.rust.ide.sdk.RsSdkType
+import org.rust.remote.getRemoteToolchainVersion
 import java.awt.Component
 
 object RsRemoteToolchainFactory : RemoteSdkFactoryImpl<RsRemoteSdkAdditionalData>() {

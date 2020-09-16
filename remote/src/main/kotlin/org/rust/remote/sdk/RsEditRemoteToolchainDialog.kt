@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.rust.remote
+package org.rust.remote.sdk
 
 import com.intellij.openapi.projectRoots.Sdk
 

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.rust.wsl.sdk
+package org.rust.wsl.sdk.add
 
 import com.intellij.execution.wsl.WSLDistributionWithRoot
 import com.intellij.execution.wsl.WSLUtil
@@ -12,21 +12,19 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.ValidationInfo
-import com.intellij.openapi.util.io.FileUtil
 import com.intellij.wsl.WSLCredentialsEditor
 import com.intellij.wsl.WSLCredentialsHolder
 import com.intellij.wsl.WSLCredentialsType
 import org.rust.ide.sdk.add.RsAddSdkPanel
 import org.rust.ide.sdk.add.RsAddSdkProvider
 import org.rust.openapiext.RsExecutionException
-import org.rust.remote.RsAddSdkUsingCredentialsEditor
-import org.rust.remote.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.add.RsAddSdkUsingCredentialsEditor
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
 import org.rust.remote.createAndInitRemoteSdk
 import org.rust.remote.getRemoteToolchainVersion
 import org.rust.stdext.Result
 import org.rust.wsl.RsWslPathBrowser
 import org.rust.wsl.distribution
-import org.rust.wsl.toRemotePath
 import org.rust.wsl.wslCredentials
 import java.awt.BorderLayout
 import java.awt.event.ActionListener
@@ -50,12 +48,7 @@ class RsAddWslPanel(existingSdks: List<Sdk>)
             layout = BorderLayout()
             add(Messages.configureMessagePaneUi(JTextPane(), MESSAGE), BorderLayout.NORTH)
         }
-        toolchainPathField.text = FileUtil.expandUserHome("~/.cargo/bin/cargo")
-    }
-
-    override fun getHelpersPath(credentials: WSLCredentialsHolder): String {
-        val helpersPath = super.getHelpersPath(credentials)
-        return credentials.distribution?.toRemotePath(helpersPath) ?: helpersPath
+        toolchainPathField.text = "/usr/bin/cargo"
     }
 
     override fun validateAll(): List<ValidationInfo> =

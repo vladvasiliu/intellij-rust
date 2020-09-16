@@ -6,7 +6,7 @@
 package org.rust.wsl.sdk
 
 import com.intellij.openapi.projectRoots.Sdk
-import org.rust.remote.RsRemoteSdkValidator
+import org.rust.remote.sdk.RsRemoteSdkValidator
 import org.rust.stdext.Result
 import org.rust.wsl.distribution
 import org.rust.wsl.isWsl

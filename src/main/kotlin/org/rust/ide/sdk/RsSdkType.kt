@@ -27,7 +27,7 @@ import org.rust.ide.sdk.add.RsAddSdkDialog
 import org.rust.ide.sdk.flavors.RsSdkFlavor
 import org.rust.openapiext.computeWithCancelableProgress
 import org.rust.remote.RsCredentialsContribution
-import org.rust.remote.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
 import org.rust.remote.getRemoteToolchainVersion
 import org.rust.stdext.toPath
 import java.lang.ref.WeakReference

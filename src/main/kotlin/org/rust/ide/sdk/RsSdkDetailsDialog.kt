@@ -29,8 +29,8 @@ import org.rust.cargo.toolchain.RustToolchain
 import org.rust.ide.sdk.add.RsAddSdkDialog
 import org.rust.openapiext.computeWithCancelableProgress
 import org.rust.remote.RsCredentialsContribution
-import org.rust.remote.RsRemoteSdkAdditionalData
-import org.rust.remote.RsRemoteSdkEditor
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.RsRemoteSdkEditor
 import org.rust.stdext.toPath
 import java.awt.Dimension
 import javax.swing.JComponent

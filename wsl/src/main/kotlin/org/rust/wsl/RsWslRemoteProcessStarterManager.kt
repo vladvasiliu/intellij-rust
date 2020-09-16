@@ -13,7 +13,7 @@ import com.intellij.openapi.project.Project
 import org.rust.cargo.runconfig.RsProcessHandler
 import org.rust.remote.RsRemotePathMapper
 import org.rust.remote.RsRemoteProcessStarterManager
-import org.rust.remote.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
 import org.rust.stdext.Result
 
 object RsWslRemoteProcessStarterManager : RsRemoteProcessStarterManager {

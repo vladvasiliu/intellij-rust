@@ -17,6 +17,8 @@ import com.intellij.util.ui.UIUtil
 import org.rust.cargo.toolchain.RustToolchain
 import org.rust.cargo.toolchain.RustcVersion
 import org.rust.openapiext.RsExecutionException
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.RsRemoteToolchainFactory
 
 class RsUnsupportedSdkTypeException : RuntimeException("Unsupported Rust SDK type")
 

@@ -18,8 +18,8 @@ import org.rust.ide.sdk.flavors.RsSdkFlavor
 import org.rust.ide.sdk.flavors.RustupSdkFlavor
 import org.rust.openapiext.computeWithCancelableProgress
 import org.rust.openapiext.pathAsPath
-import org.rust.remote.RsRemoteSdkAdditionalData
-import org.rust.remote.RsRemoteSdkValidator
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.RsRemoteSdkValidator
 import org.rust.stdext.toPath
 import java.nio.file.Path
 

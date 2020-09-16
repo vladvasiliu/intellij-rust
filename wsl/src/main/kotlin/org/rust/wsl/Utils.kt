@@ -17,7 +17,7 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.wsl.WSLCredentialsHolder
 import com.intellij.wsl.WSLCredentialsType
 import org.rust.openapiext.runUnderProgress
-import org.rust.remote.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
 import org.rust.stdext.Result
 import java.io.File
 

@@ -11,8 +11,9 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.messages.showProcessExecutionErrorDialog
 import org.rust.openapiext.RsExecutionException
-import org.rust.remote.RsEditRemoteToolchainDialog
-import org.rust.remote.RsRemoteSdkAdditionalData
+import org.rust.remote.sdk.RsEditRemoteToolchainDialog
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
+import org.rust.wsl.sdk.add.RsAddWslPanel
 import javax.swing.JComponent
 
 class RsWslRemoteToolchainDialog(

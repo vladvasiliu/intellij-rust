@@ -1009,10 +1009,10 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="org.rust.remoteSdkValidator"
-                        interface="org.rust.remote.RsRemoteSdkValidator"
+                        interface="org.rust.remote.sdk.RsRemoteSdkValidator"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.rust.remoteSdkEditor"
-                        interface="org.rust.remote.RsRemoteSdkEditor"
+                        interface="org.rust.remote.sdk.RsRemoteSdkEditor"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.rust.remoteProcessStarterManager"
                         interface="org.rust.remote.RsRemoteProcessStarterManager"

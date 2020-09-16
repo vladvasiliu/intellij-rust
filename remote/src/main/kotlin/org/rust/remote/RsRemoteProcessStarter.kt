@@ -18,6 +18,7 @@ import com.intellij.remote.PathMappingProvider
 import com.intellij.remote.RemoteMappingsManager
 import com.intellij.remote.RemoteSdkAdditionalData
 import org.rust.openapiext.runUnderProgress
+import org.rust.remote.sdk.RsRemoteSdkAdditionalData
 
 object RsRemoteProcessStarter {
     private const val CARGO_PREFIX: String = "cargo"
