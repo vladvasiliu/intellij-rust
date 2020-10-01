@@ -103,7 +103,7 @@ object CargoMetadata {
          * Features available in this package (excluding optional dependencies).
          * The entry named "default" defines which features are enabled by default.
          */
-        val features: Map<String, List<FeatureDep>>,
+        val features: Map<FeatureName, List<FeatureDep>>,
 
         /**
          * Dependencies as they listed in the package `Cargo.toml`, without package resolution or

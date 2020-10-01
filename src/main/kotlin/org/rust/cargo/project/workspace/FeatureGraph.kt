@@ -25,7 +25,7 @@ enum class FeatureState {
     }
 }
 
-data class PackageFeature(val pkg: CargoWorkspace.Package, val name: String) : PresentableNodeData {
+data class PackageFeature(val pkg: CargoWorkspace.Package, val name: FeatureName) : PresentableNodeData {
     override val text: String
         get() = "${pkg.name}/$name"
 
@@ -134,7 +134,7 @@ class FeatureGraph private constructor(
     }
 }
 
-fun Map<PackageFeature, FeatureState>.associateByPackageRoot(): Map<PackageRoot, Map<String, FeatureState>> {
+fun Map<PackageFeature, FeatureState>.associateByPackageRoot(): Map<PackageRoot, Map<FeatureName, FeatureState>> {
     val map: MutableMap<PackageRoot, MutableMap<String, FeatureState>> = hashMapOf()
     for ((feature, state) in this) {
         map.getOrPut(feature.pkg.rootDirectory) { hashMapOf() }[feature.name] = state

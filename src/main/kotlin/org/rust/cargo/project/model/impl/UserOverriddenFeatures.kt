@@ -5,15 +5,12 @@
 
 package org.rust.cargo.project.model.impl
 
-import org.rust.cargo.project.workspace.CargoWorkspace
-import org.rust.cargo.project.workspace.FeatureState
-import org.rust.cargo.project.workspace.PackageFeature
-import org.rust.cargo.project.workspace.PackageRoot
+import org.rust.cargo.project.workspace.*
 import org.rust.stdext.exhaustive
 
 abstract class UserOverriddenFeatures {
     // Package -> disabled Features
-    abstract val userOverriddenFeatures: Map<PackageRoot, Set<String>>
+    abstract val userOverriddenFeatures: Map<PackageRoot, Set<FeatureName>>
 
     fun getDisabledFeatures(packages: Iterable<CargoWorkspace.Package>): List<PackageFeature> {
         return packages.flatMap { pkg ->
@@ -44,17 +41,17 @@ abstract class UserOverriddenFeatures {
     companion object {
         val EMPTY: UserOverriddenFeatures = ImmutableUserOverriddenFeatures(emptyMap())
 
-        fun of(userOverriddenFeatures: Map<PackageRoot, Set<String>>): UserOverriddenFeatures =
+        fun of(userOverriddenFeatures: Map<PackageRoot, Set<FeatureName>>): UserOverriddenFeatures =
             ImmutableUserOverriddenFeatures(userOverriddenFeatures)
     }
 }
 
 private class ImmutableUserOverriddenFeatures(
-    override val userOverriddenFeatures: Map<PackageRoot, Set<String>>
+    override val userOverriddenFeatures: Map<PackageRoot, Set<FeatureName>>
 ) : UserOverriddenFeatures()
 
 class MutableUserOverriddenFeatures(
-    override val userOverriddenFeatures: MutableMap<PackageRoot, MutableSet<String>>
+    override val userOverriddenFeatures: MutableMap<PackageRoot, MutableSet<FeatureName>>
 ) : UserOverriddenFeatures() {
 
     fun setFeatureState(

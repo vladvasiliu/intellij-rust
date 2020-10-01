@@ -14,6 +14,9 @@ typealias PackageId = String
 /** Refers to [org.rust.cargo.project.workspace.PackageImpl.rootDirectory] */
 typealias PackageRoot = Path
 
+/** Refers to [cargo feature](https://doc.rust-lang.org/cargo/reference/features.html) name */
+typealias FeatureName = String
+
 /**
  * Cargo.toml:
  * ```
@@ -49,9 +52,9 @@ data class CargoWorkspaceData(
         val origin: PackageOrigin,
         val edition: CargoWorkspace.Edition,
         /** All features available in this package (including optional dependencies) */
-        val features: Map<String, List<FeatureDep>>,
+        val features: Map<FeatureName, List<FeatureDep>>,
         /** Enabled features (from Cargo point of view) */
-        val enabledFeatures: Set<String>,
+        val enabledFeatures: Set<FeatureName>,
         val cfgOptions: CfgOptions,
         val env: Map<String, String>,
         val outDirUrl: String?
@@ -63,7 +66,7 @@ data class CargoWorkspaceData(
         val kind: CargoWorkspace.TargetKind,
         val edition: CargoWorkspace.Edition,
         val doctest: Boolean,
-        val requiredFeatures: List<String>
+        val requiredFeatures: List<FeatureName>
     )
 
     data class Dependency(

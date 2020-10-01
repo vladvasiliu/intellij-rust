@@ -93,7 +93,7 @@ interface CargoWorkspace {
 
         val outDir: VirtualFile?
 
-        val featureState: Map<String, FeatureState>
+        val featureState: Map<FeatureName, FeatureState>
 
         fun findDependency(normName: String): Target? =
             if (this.normName == normName) libTarget else dependencies.find { it.name == normName }?.pkg?.libTarget
@@ -197,7 +197,7 @@ private class WorkspaceImpl(
     override val workspaceRootPath: Path?,
     packagesData: Collection<CargoWorkspaceData.Package>,
     override val cfgOptions: CfgOptions,
-    val featuresState: Map<PackageRoot, Map<String, FeatureState>>
+    val featuresState: Map<PackageRoot, Map<FeatureName, FeatureState>>
 ) : CargoWorkspace {
     override val packages: List<PackageImpl> = packagesData.map { pkg ->
         PackageImpl(
@@ -349,9 +349,7 @@ private class WorkspaceImpl(
         ).withDependenciesOf(this)
     }
 
-    private fun inferFeatureState(
-        disabledByUser: List<PackageFeature>
-    ): Map<PackageFeature, FeatureState> {
+    private fun inferFeatureState(disabledByUser: List<PackageFeature>): Map<PackageFeature, FeatureState> {
         val workspaceFeatureState = featureGraph.apply(defaultState = FeatureState.Enabled) {
             disableAll(disabledByUser)
         }
@@ -479,8 +477,8 @@ private class PackageImpl(
     override val edition: CargoWorkspace.Edition,
     override val cfgOptions: CfgOptions,
     /** See [org.rust.cargo.toolchain.impl.CargoMetadata.Package.features] */
-    val rawFeatures: Map<String, List<FeatureDep>>,
-    val cargoEnabledFeatures: Set<String>,
+    val rawFeatures: Map<FeatureName, List<FeatureDep>>,
+    val cargoEnabledFeatures: Set<FeatureName>,
     override val env: Map<String, String>,
     val outDirUrl: String?
 ) : CargoWorkspace.Package {
@@ -507,7 +505,7 @@ private class PackageImpl(
 
     override val features: Set<PackageFeature> = rawFeatures.keys.mapToSet { PackageFeature(this, it) }
 
-    override val featureState: Map<String, FeatureState>
+    override val featureState: Map<FeatureName, FeatureState>
         get() = workspace.featuresState[rootDirectory] ?: emptyMap()
 
     override fun toString() = "Package(name='$name', contentRootUrl='$contentRootUrl', outDirUrl='$outDirUrl')"
@@ -521,7 +519,7 @@ private class TargetImpl(
     override val kind: CargoWorkspace.TargetKind,
     override val edition: CargoWorkspace.Edition,
     override val doctest: Boolean,
-    override val requiredFeatures: List<String>
+    override val requiredFeatures: List<FeatureName>
 ) : CargoWorkspace.Target {
 
     override val crateRoot: VirtualFile? by CachedVirtualFile(crateRootUrl)
