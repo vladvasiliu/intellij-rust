@@ -207,15 +207,46 @@ open class CargoProjectsServiceImpl(
             .flatMap { ModuleRootManager.getInstance(it).contentRoots.asSequence() }
             .mapNotNull { it.findChild(RustToolchain.CARGO_TOML) }
 
+    /**
+     * Here we only modify [CargoProject.userOverriddenFeatures]. The final feature state
+     * is inferred in [WorkspaceImpl.inferFeatureState]
+     */
     fun modifyFeatures(cargoProject: CargoProject, features: Set<PackageFeature>, newState: FeatureState) {
         modifyProjectFeatures(cargoProject) { _, workspace, userOverriddenFeatures ->
             when (newState) {
                 FeatureState.Disabled -> {
+                    // When a user disables a feature, all we have to do is add it into `userOverriddenFeatures`.
+                    // The state of dependant features will be inferred in `WorkspaceImpl.inferFeatureState`
                     for (feature in features) {
                         userOverriddenFeatures.setFeatureState(feature, FeatureState.Disabled)
                     }
                 }
                 FeatureState.Enabled -> {
+                    // But when disables, we should ensure `userOverriddenFeatures` state is consistent.
+                    //
+                    // For example, consider such a case:
+                    // (let [x] mean the feature was enabled automatically (by default),
+                    // [d] – disabled because of presence in `userOverriddenFeatures`,
+                    // [ ] – disabled automatically because of dependency on [d] feature)
+                    //
+                    // [x] f1 = ["f3"]
+                    // [x] f2 = ["f3"]
+                    // [x] f3 = []
+                    //
+                    // Then a user disables `f3`:
+                    // [ ] f1 = ["f3"]
+                    // [ ] f2 = ["f3"]
+                    // [d] f3 = []
+                    // `f1` and `f2` disabled automatically because they depend on `f3`.
+                    //
+                    // Then a user enables `f1`, and this is our case!
+                    // [x] f1 = ["f3"]
+                    // [d] f2 = ["f3"]
+                    // [x] f3 = []
+                    // To enable `f1`, `f3` should be removed from `userOverriddenFeatures` (because `f1`
+                    // depends on `f3`). But if we just remove `f3` from `userOverriddenFeatures`, `f2` will
+                    // also become enabled, bu we don't want it! So we have to remove `f3` and add `f2`
+
                     workspace.featureGraph.apply(defaultState = FeatureState.Enabled) {
                         disableAll(userOverriddenFeatures.getDisabledFeatures(workspace.packages))
                         enableAll(features)

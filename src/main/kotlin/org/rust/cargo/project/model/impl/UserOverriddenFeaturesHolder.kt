@@ -15,7 +15,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * A service needed to store [UserOverriddenFeatures] separately of [CargoProjectsServiceImpl].
+ * A service needed to store [UserOverriddenFeatures] separately from [CargoProjectsServiceImpl].
  * Needed to make it possible to store them in different XML files ([Storage]s)
  */
 @State(name = "CargoProjectFeatures", storages = [

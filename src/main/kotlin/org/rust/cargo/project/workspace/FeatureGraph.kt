@@ -7,30 +7,6 @@ package org.rust.cargo.project.workspace
 
 import org.rust.lang.utils.Node
 import org.rust.lang.utils.PresentableGraph
-import org.rust.lang.utils.PresentableNodeData
-
-enum class FeatureState {
-    Enabled,
-    Disabled;
-
-    val isEnabled: Boolean
-        get() = when (this) {
-            Enabled -> true
-            Disabled -> false
-        }
-
-    operator fun not(): FeatureState = when (this) {
-        Enabled -> Disabled
-        Disabled -> Enabled
-    }
-}
-
-data class PackageFeature(val pkg: CargoWorkspace.Package, val name: FeatureName) : PresentableNodeData {
-    override val text: String
-        get() = "${pkg.name}/$name"
-
-    override fun toString(): String = text
-}
 
 private typealias FeaturesGraphInner = PresentableGraph<PackageFeature, Unit>
 private typealias FeatureNode = Node<PackageFeature, Unit>

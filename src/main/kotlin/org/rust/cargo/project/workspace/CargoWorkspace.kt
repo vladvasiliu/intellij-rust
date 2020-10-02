@@ -349,7 +349,15 @@ private class WorkspaceImpl(
         ).withDependenciesOf(this)
     }
 
+    /**
+     * Infers a state of each Cargo feature of each package in the workspace (including dependencies!).
+     *
+     * Initial state: all [DEPENDENCY] packages features are disabled, all [WORKSPACE] packages features are enabled,
+     * excluding [disabledByUser] features.
+     * Then we enable [DEPENDENCY] packages features transitively based on the initial state and features dependencies
+     */
     private fun inferFeatureState(disabledByUser: List<PackageFeature>): Map<PackageFeature, FeatureState> {
+        // Calculate features that should be enabled in the workspace, all by default (if `disabledByUser` is empty)
         val workspaceFeatureState = featureGraph.apply(defaultState = FeatureState.Enabled) {
             disableAll(disabledByUser)
         }
@@ -365,6 +373,15 @@ private class WorkspaceImpl(
                     }
                 }
 
+                // Also, enable features specified in dependencies configuration. Consider `Cargo.toml`:
+                // ```
+                // [dependency]
+                // foo = { version = "*", feature = ["bar", "baz"] }
+                //                                 #^ enable these features
+                // ```
+                // Here features `bar` and `baz` in package `foo` should be enabled, but only if the
+                // package `foo` is not a workspace member. Otherwise its features are controlled by
+                // a user (and enabled by default)
                 for (dependency in pkg.dependencies) {
                     if (dependency.pkg.origin == WORKSPACE || dependency.pkg.origin == STDLIB) continue
                     if (dependency.areDefaultFeaturesEnabled) {
@@ -382,7 +399,7 @@ private class WorkspaceImpl(
         val enabledByCargo = packages.flatMap { pkg ->
             pkg.cargoEnabledFeatures.map { PackageFeature(pkg, it) }
         }
-        for ((feature, state) in inferFeatureState(emptyList())) {
+        for ((feature, state) in inferFeatureState(disabledByUser = emptyList())) {
             if (feature in enabledByCargo != state.isEnabled) {
                 error("Feature ${feature.name} in package ${feature.pkg.name} should be ${!state}, but it is $state")
             }
@@ -425,7 +442,7 @@ private class WorkspaceImpl(
             // handle cycles here.
 
             val workspaceRootPath = data.workspaceRoot?.let { Paths.get(it) }
-            val result = WorkspaceImpl(manifestPath, workspaceRootPath, data.packages, cfgOptions, mutableMapOf())
+            val result = WorkspaceImpl(manifestPath, workspaceRootPath, data.packages, cfgOptions, emptyMap())
 
             // Fill package dependencies
             run {
