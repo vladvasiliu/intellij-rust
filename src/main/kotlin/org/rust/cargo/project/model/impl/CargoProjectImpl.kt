@@ -207,7 +207,7 @@ open class CargoProjectsServiceImpl(
             .flatMap { ModuleRootManager.getInstance(it).contentRoots.asSequence() }
             .mapNotNull { it.findChild(RustToolchain.CARGO_TOML) }
 
-    override fun updateFeatures(cargoProject: CargoProject, features: Set<PackageFeature>, newState: FeatureState) {
+    fun modifyFeatures(cargoProject: CargoProject, features: Set<PackageFeature>, newState: FeatureState) {
         modifyProjectFeatures(cargoProject) { _, workspace, userOverriddenFeatures ->
             when (newState) {
                 FeatureState.Disabled -> {
@@ -427,6 +427,10 @@ data class CargoProjectImpl(
 
     @TestOnly
     fun setRootDir(dir: VirtualFile) = rootDirCache.set(dir)
+
+    override fun modifyFeatures(features: Set<PackageFeature>, newState: FeatureState) {
+        projectService.modifyFeatures(this, features, newState)
+    }
 
     // Checks that the project is https://github.com/rust-lang/rust
     fun doesProjectLooksLikeRustc(): Boolean {

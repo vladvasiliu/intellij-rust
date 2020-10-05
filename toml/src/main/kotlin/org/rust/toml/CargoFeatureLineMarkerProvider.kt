@@ -156,8 +156,7 @@ private object ToggleFeatureAction : GutterIconNavigationHandler<PsiElement> {
             context.cargoProjectsService.refreshAllProjects()
         }
 
-        context.cargoProjectsService.updateFeatures(
-            context.cargoProject,
+        context.cargoProject.modifyFeatures(
             setOf(PackageFeature(context.cargoPackage, featureName)),
             newState
         )
@@ -196,7 +195,7 @@ private object OpenSettingsAction : GutterIconNavigationHandler<PsiElement> {
         }
 
         override fun actionPerformed(e: AnActionEvent) {
-            context.cargoProjectsService.updateFeatures(context.cargoProject, context.cargoPackage.features, newState)
+            context.cargoProject.modifyFeatures(context.cargoPackage.features, newState)
         }
     }
 }

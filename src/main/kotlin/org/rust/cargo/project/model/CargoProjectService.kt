@@ -53,8 +53,6 @@ interface CargoProjectsService {
     fun discoverAndRefresh(): CompletableFuture<out List<CargoProject>>
     fun suggestManifests(): Sequence<VirtualFile>
 
-    fun updateFeatures(cargoProject: CargoProject, features: Set<PackageFeature>, newState: FeatureState)
-
     companion object {
         val CARGO_PROJECTS_TOPIC: Topic<CargoProjectsListener> = Topic(
             "cargo projects changes",
@@ -93,8 +91,6 @@ interface CargoProject : UserDataHolderEx {
 
     val rustcInfo: RustcInfo?
 
-    val userOverriddenFeatures: UserOverriddenFeatures
-
     val workspaceStatus: UpdateStatus
     val stdlibStatus: UpdateStatus
     val rustcInfoStatus: UpdateStatus
@@ -103,6 +99,16 @@ interface CargoProject : UserDataHolderEx {
         get() = workspaceStatus
             .merge(stdlibStatus)
             .merge(rustcInfoStatus)
+
+    val userOverriddenFeatures: UserOverriddenFeatures
+
+    /**
+     * Modifies [userOverriddenFeatures] that eventually affects [CargoWorkspace.Package.featureState].
+     * Note that [CargoProject] is immutable object, so this instance is not mutated by [modifyFeatures]
+     * invocation. Instead, new [CargoProject] instance is created and replaces this instance in
+     * [CargoProjectsService.allProjects].
+     */
+    fun modifyFeatures(features: Set<PackageFeature>, newState: FeatureState)
 
     sealed class UpdateStatus(private val priority: Int) {
         object UpToDate : UpdateStatus(0)
