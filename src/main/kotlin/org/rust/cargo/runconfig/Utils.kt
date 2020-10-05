@@ -25,6 +25,7 @@ import org.rust.cargo.runconfig.filters.RsConsoleFilter
 import org.rust.cargo.runconfig.filters.RsExplainFilter
 import org.rust.cargo.runconfig.filters.RsPanicFilter
 import org.rust.cargo.toolchain.CargoCommandLine
+import org.rust.ide.sdk.toolchain
 import org.rust.openapiext.checkIsDispatchThread
 import org.rust.stdext.buildList
 import java.nio.file.Path
@@ -33,7 +34,6 @@ import java.nio.file.Paths
 fun CargoCommandLine.mergeWithDefault(default: CargoCommandConfiguration): CargoCommandLine =
     copy(
         backtraceMode = default.backtrace,
-        channel = default.channel,
         environmentVariables = default.env,
         allFeatures = default.allFeatures,
         emulateTerminal = default.emulateTerminal
@@ -55,7 +55,8 @@ fun Project.buildProject() {
         val settings = rustSettings
         add("--all")
         if (settings.compileAllTargets) {
-            val allTargets = settings.toolchain
+            val allTargets = settings.sdk
+                ?.toolchain
                 ?.rawCargo()
                 ?.checkSupportForBuildCheckAllTargets()
                 ?: false
@@ -126,11 +127,13 @@ sealed class BuildResult {
     }
 }
 
-fun Element.writeString(name: String, value: String) {
-    val opt = Element("option")
-    opt.setAttribute("name", name)
-    opt.setAttribute("value", value)
-    addContent(opt)
+fun Element.writeString(name: String, value: String?) {
+    if (value != null) {
+        val opt = Element("option")
+        opt.setAttribute("name", name)
+        opt.setAttribute("value", value)
+        addContent(opt)
+    }
 }
 
 fun Element.readString(name: String): String? =

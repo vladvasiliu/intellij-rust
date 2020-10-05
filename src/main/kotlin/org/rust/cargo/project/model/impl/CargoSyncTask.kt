@@ -27,6 +27,7 @@ import org.rust.cargo.toolchain.RustToolchain
 import org.rust.cargo.toolchain.Rustup
 import org.rust.cargo.util.DownloadResult
 import org.rust.ide.notifications.showBalloon
+import org.rust.ide.sdk.explicitPathToStdlib
 import org.rust.openapiext.TaskResult
 import java.util.concurrent.CompletableFuture
 
@@ -95,7 +96,7 @@ private fun fetchRustcInfo(
         return TaskResult.Err("Invalid Rust toolchain ${context.toolchain.presentableLocation}")
     }
 
-    val sysroot = context.toolchain.getSysroot(context.oldCargoProject.workingDirectory)
+    val sysroot = context.toolchain.getSysroot()
         ?: return TaskResult.Err("failed to get project sysroot")
 
     val versions = context.toolchain.queryVersions()
@@ -161,10 +162,10 @@ private fun fetchStdlib(
         }
     }
 
-    val rustup = context.toolchain.rustup(workingDirectory)
+    val rustup = context.toolchain.rustup()
     if (rustup == null) {
-        val explicitPath = context.project.rustSettings.explicitPathToStdlib
-            ?: context.toolchain.getStdlibFromSysroot(workingDirectory)?.path
+        val explicitPath = context.project.rustSettings.sdk?.explicitPathToStdlib
+            ?: context.toolchain.getStdlibFromSysroot()?.path
         val lib = explicitPath?.let { StandardLibrary.fromPath(it) }
         return when {
             explicitPath == null -> TaskResult.Err("no explicit stdlib or rustup found")

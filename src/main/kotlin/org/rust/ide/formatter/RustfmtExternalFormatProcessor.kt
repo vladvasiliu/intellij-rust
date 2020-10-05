@@ -23,7 +23,6 @@ import org.rust.cargo.project.model.CargoProject
 import org.rust.cargo.project.model.cargoProjects
 import org.rust.cargo.project.settings.rustSettings
 import org.rust.cargo.project.settings.toolchain
-import org.rust.cargo.runconfig.command.workingDirectory
 import org.rust.cargo.toolchain.Rustfmt
 import org.rust.cargo.toolchain.Rustup.Companion.checkNeedInstallRustfmt
 import org.rust.ide.formatter.RustfmtExternalFormatProcessor.Companion.formatWithRustfmtOrBuiltinFormatter
@@ -124,8 +123,8 @@ class RustfmtExternalFormatProcessor : ExternalFormatProcessor {
             val project = source.project
 
             var text: String? = null
-           ApplicationManagerEx.getApplicationEx().runWriteActionWithCancellableProgressInDispatchThread("title", project, null) {
-                if (checkNeedInstallRustfmt(project, cargoProject.workingDirectory)) {
+            ApplicationManagerEx.getApplicationEx().runWriteActionWithCancellableProgressInDispatchThread("title", project, null) {
+                if (checkNeedInstallRustfmt(project)) {
                     return@runWriteActionWithCancellableProgressInDispatchThread
                 }
 

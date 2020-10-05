@@ -6,17 +6,22 @@
 package org.rust.cargo.project.settings
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
-import com.intellij.util.io.systemIndependentPath
+import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.annotations.Transient
 import org.jetbrains.annotations.TestOnly
 import org.rust.cargo.toolchain.ExternalLinter
 import org.rust.cargo.toolchain.RustToolchain
 import org.rust.ide.experiments.RsExperiments
+import org.rust.ide.sdk.RsSdkUtils.findOrCreateSdk
+import org.rust.ide.sdk.RsSdkUtils.findSdkById
+import org.rust.ide.sdk.id
+import org.rust.ide.sdk.toolchain
 import org.rust.openapiext.isFeatureEnabled
-import java.nio.file.Paths
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
@@ -25,14 +30,10 @@ interface RustProjectSettingsService {
 
     data class State(
         var version: Int? = null,
-        @AffectsCargoMetadata
         var toolchainHomeDirectory: String? = null,
-        var autoUpdateEnabled: Boolean = true,
-        // Usually, we use `rustup` to find stdlib automatically,
-        // but if one does not use rustup, it's possible to
-        // provide path to stdlib explicitly.
         @AffectsCargoMetadata
-        var explicitPathToStdlib: String? = null,
+        var sdkId: String? = null,
+        var autoUpdateEnabled: Boolean = true,
         @AffectsHighlighting
         var externalLinter: ExternalLinter = ExternalLinter.DEFAULT,
         @AffectsHighlighting
@@ -50,10 +51,22 @@ interface RustProjectSettingsService {
     ) {
         @get:Transient
         @set:Transient
-        var toolchain: RustToolchain?
-            get() = toolchainHomeDirectory?.let { RustToolchain(Paths.get(it)) }
+        var sdk: Sdk?
+            get() {
+                val oldToolchainHomeDirectory = toolchainHomeDirectory
+                if (sdkId == null && oldToolchainHomeDirectory != null) {
+                    val sdk = invokeAndWaitIfNeeded {
+                        runWriteAction {
+                            findOrCreateSdk(oldToolchainHomeDirectory)
+                        }
+                    }
+                    sdkId = sdk?.id
+                    toolchainHomeDirectory = null
+                }
+                return sdkId?.let { findSdkById(it) }
+            }
             set(value) {
-                toolchainHomeDirectory = value?.location?.systemIndependentPath
+                sdkId = value?.id
             }
     }
 
@@ -85,8 +98,7 @@ interface RustProjectSettingsService {
     var settingsState: State
 
     val version: Int?
-    val toolchain: RustToolchain?
-    val explicitPathToStdlib: String?
+    val sdk: Sdk?
     val autoUpdateEnabled: Boolean
     val externalLinter: ExternalLinter
     val runExternalLinterOnTheFly: Boolean
@@ -145,4 +157,5 @@ val Project.rustSettings: RustProjectSettingsService
     get() = ServiceManager.getService(this, RustProjectSettingsService::class.java)
         ?: error("Failed to get RustProjectSettingsService for $this")
 
-val Project.toolchain: RustToolchain? get() = rustSettings.toolchain
+val Project.toolchain: RustToolchain?
+    get() = rustSettings.sdk?.toolchain

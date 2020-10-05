@@ -18,8 +18,8 @@ const val XML_FORMAT_VERSION: Int = 2
 
 const val VERSION: String = "version"
 const val TOOLCHAIN_HOME_DIRECTORY: String = "toolchainHomeDirectory"
+const val SDK_ID: String = "sdkId"
 const val AUTO_UPDATE_ENABLED: String = "autoUpdateEnabled"
-const val EXPLICIT_PATH_TO_STDLIB: String = "explicitPathToStdlib"
 const val EXTERNAL_LINTER: String = "externalLinter"
 const val RUN_EXTERNAL_LINTER_ON_THE_FLY: String = "runExternalLinterOnTheFly"
 const val EXTERNAL_LINTER_ARGUMENTS: String = "externalLinterArguments"
@@ -29,7 +29,6 @@ const val MACRO_EXPANSION_ENGINE: String = "macroExpansionEngine"
 const val DOCTEST_INJECTION_ENABLED: String = "doctestInjectionEnabled"
 const val USE_RUSTFMT: String = "useRustfmt"
 const val RUN_RUSTFMT_ON_SAVE: String = "runRustfmtOnSave"
-const val USE_SKIP_CHILDREN: String = "useSkipChildren"
 
 // Legacy properties needed for migration
 const val USE_CARGO_CHECK_ANNOTATOR: String = "useCargoCheckAnnotator"

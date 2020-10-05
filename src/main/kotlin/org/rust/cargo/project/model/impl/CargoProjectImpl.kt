@@ -19,6 +19,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectEx
+import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ContentEntry
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.ModuleRootModificationUtil
@@ -48,7 +49,6 @@ import org.rust.cargo.project.settings.RustProjectSettingsService
 import org.rust.cargo.project.settings.RustProjectSettingsService.RustSettingsChangedEvent
 import org.rust.cargo.project.settings.RustProjectSettingsService.RustSettingsListener
 import org.rust.cargo.project.settings.rustSettings
-import org.rust.cargo.project.settings.toolchain
 import org.rust.cargo.project.toolwindow.CargoToolWindow.Companion.initializeToolWindow
 import org.rust.cargo.project.workspace.CargoWorkspace
 import org.rust.cargo.project.workspace.PackageOrigin
@@ -58,6 +58,9 @@ import org.rust.cargo.runconfig.command.workingDirectory
 import org.rust.cargo.toolchain.RustToolchain
 import org.rust.cargo.util.AutoInjectedCrates
 import org.rust.ide.notifications.showBalloon
+import org.rust.ide.sdk.RsSdkAdditionalData
+import org.rust.ide.sdk.RsSdkType
+import org.rust.ide.sdk.id
 import org.rust.lang.RsFileType
 import org.rust.lang.core.macros.macroExpansionManager
 import org.rust.openapiext.CachedVirtualFile
@@ -103,6 +106,16 @@ open class CargoProjectsServiceImpl(
                         GuiUtils.invokeLaterIfNeeded({
                             initializeToolWindow(project)
                         }, ModalityState.NON_MODAL)
+                    }
+                }
+            })
+
+            subscribe(RsSdkAdditionalData.RUST_ADDITIONAL_DATA_TOPIC, object : RsSdkAdditionalData.Listener {
+                override fun sdkAdditionalDataChanged(sdk: Sdk) {
+                    if (sdk.sdkType !is RsSdkType) return
+                    val projectSdk = project.rustSettings.sdk ?: return
+                    if (sdk.id == projectSdk.id) {
+                        refreshAllProjects()
                     }
                 }
             })
