@@ -17,7 +17,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.messages.Topic
 import org.rust.cargo.CargoConstants
-import org.rust.cargo.project.model.impl.UserOverriddenFeatures
+import org.rust.cargo.project.model.impl.UserDisabledFeatures
 import org.rust.cargo.project.settings.rustSettings
 import org.rust.cargo.project.workspace.CargoWorkspace
 import org.rust.cargo.project.workspace.FeatureState
@@ -100,10 +100,10 @@ interface CargoProject : UserDataHolderEx {
             .merge(stdlibStatus)
             .merge(rustcInfoStatus)
 
-    val userOverriddenFeatures: UserOverriddenFeatures
+    val userDisabledFeatures: UserDisabledFeatures
 
     /**
-     * Modifies [userOverriddenFeatures] that eventually affects [CargoWorkspace.Package.featureState].
+     * Modifies [userDisabledFeatures] that eventually affects [CargoWorkspace.Package.featureState].
      * Note that [CargoProject] is immutable object, so this instance is not mutated by [modifyFeatures]
      * invocation. Instead, new [CargoProject] instance is created and replaces this instance in
      * [CargoProjectsService.allProjects].

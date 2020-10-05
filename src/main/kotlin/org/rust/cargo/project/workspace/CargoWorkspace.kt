@@ -13,7 +13,7 @@ import org.jetbrains.annotations.TestOnly
 import org.rust.cargo.CfgOptions
 import org.rust.cargo.project.model.CargoProjectsService
 import org.rust.cargo.project.model.RustcInfo
-import org.rust.cargo.project.model.impl.UserOverriddenFeatures
+import org.rust.cargo.project.model.impl.UserDisabledFeatures
 import org.rust.cargo.project.workspace.PackageOrigin.*
 import org.rust.cargo.util.AutoInjectedCrates.CORE
 import org.rust.cargo.util.AutoInjectedCrates.STD
@@ -53,7 +53,7 @@ interface CargoWorkspace {
     fun isCrateRoot(root: VirtualFile) = findTargetByCrateRoot(root) != null
 
     fun withStdlib(stdlib: StandardLibrary, cfgOptions: CfgOptions, rustcInfo: RustcInfo? = null): CargoWorkspace
-    fun withOverriddenFeatures(userOverriddenFeatures: UserOverriddenFeatures): CargoWorkspace
+    fun withOverriddenFeatures(userDisabledFeatures: UserDisabledFeatures): CargoWorkspace
     val hasStandardLibrary: Boolean get() = packages.any { it.origin == STDLIB }
 
     @TestOnly
@@ -335,9 +335,9 @@ private class WorkspaceImpl(
         return this
     }
 
-    override fun withOverriddenFeatures(userOverriddenFeatures: UserOverriddenFeatures): CargoWorkspace {
+    override fun withOverriddenFeatures(userDisabledFeatures: UserDisabledFeatures): CargoWorkspace {
         checkFeaturesInference()
-        val disabledByUser = userOverriddenFeatures.getDisabledFeatures(packages)
+        val disabledByUser = userDisabledFeatures.getDisabledFeatures(packages)
         val featuresState = inferFeatureState(disabledByUser).associateByPackageRoot()
 
         return WorkspaceImpl(

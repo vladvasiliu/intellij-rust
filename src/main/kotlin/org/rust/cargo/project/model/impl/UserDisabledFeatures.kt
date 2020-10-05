@@ -8,29 +8,28 @@ package org.rust.cargo.project.model.impl
 import org.rust.cargo.project.workspace.*
 import org.rust.stdext.exhaustive
 
-abstract class UserOverriddenFeatures {
-    // Package -> disabled Features
-    abstract val userOverriddenFeatures: Map<PackageRoot, Set<FeatureName>>
+abstract class UserDisabledFeatures {
+    abstract val pkgRootToDisabledFeatures: Map<PackageRoot, Set<FeatureName>>
 
     fun getDisabledFeatures(packages: Iterable<CargoWorkspace.Package>): List<PackageFeature> {
         return packages.flatMap { pkg ->
-            userOverriddenFeatures[pkg.rootDirectory]
+            pkgRootToDisabledFeatures[pkg.rootDirectory]
                 ?.mapNotNull { name -> PackageFeature(pkg, name).takeIf { it in pkg.features } }
                 ?: emptyList()
         }
     }
 
     fun isEmpty(): Boolean {
-        return userOverriddenFeatures.isEmpty() || userOverriddenFeatures.values.all { it.isEmpty() }
+        return pkgRootToDisabledFeatures.isEmpty() || pkgRootToDisabledFeatures.values.all { it.isEmpty() }
     }
 
-    fun toMutable(): MutableUserOverriddenFeatures = MutableUserOverriddenFeatures(
-        userOverriddenFeatures
+    fun toMutable(): MutableUserDisabledFeatures = MutableUserDisabledFeatures(
+        pkgRootToDisabledFeatures
             .mapValues { (_, v) -> v.toMutableSet() }
             .toMutableMap()
     )
 
-    fun retain(packages: Iterable<CargoWorkspace.Package>): UserOverriddenFeatures {
+    fun retain(packages: Iterable<CargoWorkspace.Package>): UserDisabledFeatures {
         val newMap = EMPTY.toMutable()
         for (disabledFeature in getDisabledFeatures(packages)) {
             newMap.setFeatureState(disabledFeature, FeatureState.Disabled)
@@ -39,20 +38,20 @@ abstract class UserOverriddenFeatures {
     }
 
     companion object {
-        val EMPTY: UserOverriddenFeatures = ImmutableUserOverriddenFeatures(emptyMap())
+        val EMPTY: UserDisabledFeatures = ImmutableUserDisabledFeatures(emptyMap())
 
-        fun of(userOverriddenFeatures: Map<PackageRoot, Set<FeatureName>>): UserOverriddenFeatures =
-            ImmutableUserOverriddenFeatures(userOverriddenFeatures)
+        fun of(pkgRootToDisabledFeatures: Map<PackageRoot, Set<FeatureName>>): UserDisabledFeatures =
+            ImmutableUserDisabledFeatures(pkgRootToDisabledFeatures)
     }
 }
 
-private class ImmutableUserOverriddenFeatures(
-    override val userOverriddenFeatures: Map<PackageRoot, Set<FeatureName>>
-) : UserOverriddenFeatures()
+private class ImmutableUserDisabledFeatures(
+    override val pkgRootToDisabledFeatures: Map<PackageRoot, Set<FeatureName>>
+) : UserDisabledFeatures()
 
-class MutableUserOverriddenFeatures(
-    override val userOverriddenFeatures: MutableMap<PackageRoot, MutableSet<FeatureName>>
-) : UserOverriddenFeatures() {
+class MutableUserDisabledFeatures(
+    override val pkgRootToDisabledFeatures: MutableMap<PackageRoot, MutableSet<FeatureName>>
+) : UserDisabledFeatures() {
 
     fun setFeatureState(
         feature: PackageFeature,
@@ -61,10 +60,10 @@ class MutableUserOverriddenFeatures(
         val packageRoot = feature.pkg.rootDirectory
         when (state) {
             FeatureState.Enabled -> {
-                userOverriddenFeatures[packageRoot]?.remove(feature.name)
+                pkgRootToDisabledFeatures[packageRoot]?.remove(feature.name)
             }
             FeatureState.Disabled -> {
-                userOverriddenFeatures.getOrPut(packageRoot) { hashSetOf() }
+                pkgRootToDisabledFeatures.getOrPut(packageRoot) { hashSetOf() }
                     .add(feature.name)
             }
         }.exhaustive

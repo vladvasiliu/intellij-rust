@@ -15,30 +15,30 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * A service needed to store [UserOverriddenFeatures] separately from [CargoProjectsServiceImpl].
+ * A service needed to store [UserDisabledFeatures] separately from [CargoProjectsServiceImpl].
  * Needed to make it possible to store them in different XML files ([Storage]s)
  */
 @State(name = "CargoProjectFeatures", storages = [
     Storage(StoragePathMacros.WORKSPACE_FILE, roamingType = RoamingType.DISABLED)
 ])
 @Service
-class UserOverriddenFeaturesHolder(private val project: Project) : PersistentStateComponent<Element> {
-    private var loadedUserOverriddenFeatures: Map<Path, UserOverriddenFeatures> = emptyMap()
+class UserDisabledFeaturesHolder(private val project: Project) : PersistentStateComponent<Element> {
+    private var loadedUserDisabledFeatures: Map<Path, UserDisabledFeatures> = emptyMap()
 
-    fun takeLoadedUserOverriddenFeatures(pathToManifest: Path): UserOverriddenFeatures {
-        val result = loadedUserOverriddenFeatures[pathToManifest] ?: UserOverriddenFeatures.EMPTY
-        loadedUserOverriddenFeatures = emptyMap()
+    fun takeLoadedUserDisabledFeatures(pathToManifest: Path): UserDisabledFeatures {
+        val result = loadedUserDisabledFeatures[pathToManifest] ?: UserDisabledFeatures.EMPTY
+        loadedUserDisabledFeatures = emptyMap()
         return result
     }
 
     override fun getState(): Element {
         val state = Element("state")
         for (cargoProject in project.cargoProjects.allProjects) {
-            val pkgToFeatures = cargoProject.userOverriddenFeatures
+            val pkgToFeatures = cargoProject.userDisabledFeatures
             if (!pkgToFeatures.isEmpty()) {
                 val cargoProjectElement = Element("cargoProject")
                 cargoProjectElement.setAttribute("file", cargoProject.manifest.systemIndependentPath)
-                for ((pkg, features) in pkgToFeatures.userOverriddenFeatures) {
+                for ((pkg, features) in pkgToFeatures.pkgRootToDisabledFeatures) {
                     if (features.isNotEmpty()) {
                         val packageElement = Element("package")
                         packageElement.setAttribute("file", pkg.systemIndependentPath)
@@ -59,9 +59,9 @@ class UserOverriddenFeaturesHolder(private val project: Project) : PersistentSta
     override fun loadState(state: Element) {
         val cargoProjects = state.getChildren("cargoProject")
 
-        loadedUserOverriddenFeatures = cargoProjects.associate { cargoProject ->
+        loadedUserDisabledFeatures = cargoProjects.associate { cargoProject ->
             val projectFile = cargoProject.getAttributeValue("file").orEmpty()
-            val features = UserOverriddenFeatures.of(cargoProject.getChildren("package").associate { pkg ->
+            val features = UserDisabledFeatures.of(cargoProject.getChildren("package").associate { pkg ->
                 val packageFile = pkg.getAttributeValue("file").orEmpty()
                 val features = pkg.getChildren("feature").mapNotNullToSet {
                     it.getAttributeValue("name")

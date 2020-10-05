@@ -208,25 +208,25 @@ open class CargoProjectsServiceImpl(
             .mapNotNull { it.findChild(RustToolchain.CARGO_TOML) }
 
     /**
-     * Here we only modify [CargoProject.userOverriddenFeatures]. The final feature state
+     * Here we only modify [CargoProject.userDisabledFeatures]. The final feature state
      * is inferred in [WorkspaceImpl.inferFeatureState]
      */
     fun modifyFeatures(cargoProject: CargoProject, features: Set<PackageFeature>, newState: FeatureState) {
-        modifyProjectFeatures(cargoProject) { _, workspace, userOverriddenFeatures ->
+        modifyProjectFeatures(cargoProject) { _, workspace, userDisabledFeatures ->
             when (newState) {
                 FeatureState.Disabled -> {
-                    // When a user disables a feature, all we have to do is add it into `userOverriddenFeatures`.
+                    // When a user disables a feature, all we have to do is add it into `userDisabledFeatures`.
                     // The state of dependant features will be inferred in `WorkspaceImpl.inferFeatureState`
                     for (feature in features) {
-                        userOverriddenFeatures.setFeatureState(feature, FeatureState.Disabled)
+                        userDisabledFeatures.setFeatureState(feature, FeatureState.Disabled)
                     }
                 }
                 FeatureState.Enabled -> {
-                    // But when disables, we should ensure `userOverriddenFeatures` state is consistent.
+                    // But when disables, we should ensure `userDisabledFeatures` state is consistent.
                     //
                     // For example, consider such a case:
                     // (let [x] mean the feature was enabled automatically (by default),
-                    // [d] – disabled because of presence in `userOverriddenFeatures`,
+                    // [d] – disabled because of presence in `userDisabledFeatures`,
                     // [ ] – disabled automatically because of dependency on [d] feature)
                     //
                     // [x] f1 = ["f3"]
@@ -243,16 +243,16 @@ open class CargoProjectsServiceImpl(
                     // [x] f1 = ["f3"]
                     // [d] f2 = ["f3"]
                     // [x] f3 = []
-                    // To enable `f1`, `f3` should be removed from `userOverriddenFeatures` (because `f1`
-                    // depends on `f3`). But if we just remove `f3` from `userOverriddenFeatures`, `f2` will
+                    // To enable `f1`, `f3` should be removed from `userDisabledFeatures` (because `f1`
+                    // depends on `f3`). But if we just remove `f3` from `userDisabledFeatures`, `f2` will
                     // also become enabled, bu we don't want it! So we have to remove `f3` and add `f2`
 
                     workspace.featureGraph.apply(defaultState = FeatureState.Enabled) {
-                        disableAll(userOverriddenFeatures.getDisabledFeatures(workspace.packages))
+                        disableAll(userDisabledFeatures.getDisabledFeatures(workspace.packages))
                         enableAll(features)
                     }.forEach { (feature, state) ->
                         if (feature.pkg.origin == PackageOrigin.WORKSPACE) {
-                            userOverriddenFeatures.setFeatureState(feature, state)
+                            userDisabledFeatures.setFeatureState(feature, state)
                         }
                     }
                 }
@@ -262,7 +262,7 @@ open class CargoProjectsServiceImpl(
 
     private fun modifyProjectFeatures(
         cargoProject: CargoProject,
-        action: (CargoProject, CargoWorkspace, userOverriddenFeatures: MutableUserOverriddenFeatures) -> Unit
+        action: (CargoProject, CargoWorkspace, userDisabledFeatures: MutableUserDisabledFeatures) -> Unit
     ) {
         modifyProjectsLite { projects ->
             val oldProject = projects.singleOrNull { it.manifest == cargoProject.manifest }
@@ -270,11 +270,11 @@ open class CargoProjectsServiceImpl(
 
             val workspace = oldProject.workspace ?: return@modifyProjectsLite projects
 
-            val userOverriddenFeatures = oldProject.userOverriddenFeatures.toMutable()
+            val userDisabledFeatures = oldProject.userDisabledFeatures.toMutable()
 
-            action(oldProject, workspace, userOverriddenFeatures)
+            action(oldProject, workspace, userDisabledFeatures)
 
-            val newProject = oldProject.copy(userOverriddenFeatures = userOverriddenFeatures)
+            val newProject = oldProject.copy(userDisabledFeatures = userDisabledFeatures)
             val newProjects = projects.toMutableList()
 
             // This can't fail because we got `oldProject` from `projects` few lines above
@@ -379,9 +379,9 @@ open class CargoProjectsServiceImpl(
         for (cargoProject in cargoProjects) {
             val file = cargoProject.getAttributeValue("FILE")
             val manifest = Paths.get(file)
-            val userOverriddenFeatures = project.service<UserOverriddenFeaturesHolder>()
-                .takeLoadedUserOverriddenFeatures(manifest)
-            val newProject = CargoProjectImpl(manifest, this, userOverriddenFeatures)
+            val userDisabledFeatures = project.service<UserDisabledFeaturesHolder>()
+                .takeLoadedUserDisabledFeatures(manifest)
+            val newProject = CargoProjectImpl(manifest, this, userDisabledFeatures)
             loaded.add(newProject)
         }
 
@@ -421,7 +421,7 @@ open class CargoProjectsServiceImpl(
 data class CargoProjectImpl(
     override val manifest: Path,
     private val projectService: CargoProjectsServiceImpl,
-    override val userOverriddenFeatures: UserOverriddenFeatures = UserOverriddenFeatures.EMPTY,
+    override val userDisabledFeatures: UserDisabledFeatures = UserDisabledFeatures.EMPTY,
     private val rawWorkspace: CargoWorkspace? = null,
     private val stdlib: StandardLibrary? = null,
     override val rustcInfo: RustcInfo? = null,
@@ -435,7 +435,7 @@ data class CargoProjectImpl(
         val rawWorkspace = rawWorkspace ?: return@lazy null
         val stdlib = stdlib ?: return@lazy rawWorkspace
         rawWorkspace.withStdlib(stdlib, rawWorkspace.cfgOptions, rustcInfo)
-            .withOverriddenFeatures(userOverriddenFeatures)
+            .withOverriddenFeatures(userDisabledFeatures)
     }
 
     override val presentableName: String by lazy {
@@ -483,7 +483,7 @@ data class CargoProjectImpl(
         is TaskResult.Ok -> copy(
             rawWorkspace = result.value,
             workspaceStatus = UpdateStatus.UpToDate,
-            userOverriddenFeatures = userOverriddenFeatures.retain(result.value.packages)
+            userDisabledFeatures = userDisabledFeatures.retain(result.value.packages)
         )
         is TaskResult.Err -> copy(workspaceStatus = UpdateStatus.UpdateFailed(result.reason))
     }
