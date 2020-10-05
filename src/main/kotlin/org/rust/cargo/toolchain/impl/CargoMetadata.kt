@@ -168,9 +168,8 @@ object CargoMetadata {
         val doctest: Boolean?,
 
         /**
-         * Specifies which package features the target needs in order to be built. If any of the required
-         * features are not enabled, the target will be skipped. This is only relevant for the `[[bin]]`,
-         * `[[bench]]`, `[[test]]`, and `[[example]]` sections, it has no effect on `[lib]`.
+         * Specifies which package features the target needs in order to be built. This is only relevant
+         * for the `[[bin]]`, `[[bench]]`, `[[test]]`, and `[[example]]` sections, it has no effect on `[lib]`.
          *
          * See [docs](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-required-features-field)
          */

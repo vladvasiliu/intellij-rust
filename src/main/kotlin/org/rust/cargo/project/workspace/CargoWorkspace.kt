@@ -453,7 +453,9 @@ private class WorkspaceImpl(
                     pkg.dependencies += pkgDeps.mapNotNull { dep ->
                         val dependencyPackage = idToPackage[dep.id] ?: return@mapNotNull null
 
-                        val rawDep = pkgRawDeps.filter { rawDep ->
+                        // There can be multiple appropriate raw dependencies because a dependency can be mentioned
+                        // in `Cargo.toml` in different sections, e.g. [dev-dependencies] and [build-dependencies]
+                        val rawDeps = pkgRawDeps.filter { rawDep ->
                             rawDep.name == dependencyPackage.name && dep.depKinds.any {
                                 it.kind == CargoWorkspace.DepKind.Unclassified ||
                                     it.target == rawDep.target && it.kind.cargoName == rawDep.kind
@@ -466,9 +468,9 @@ private class WorkspaceImpl(
                             dependencyPackage,
                             depName,
                             dep.depKinds,
-                            rawDep.any { it.optional },
-                            rawDep.any { it.uses_default_features },
-                            rawDep.flatMap { it.features }.toSet()
+                            rawDeps.any { it.optional },
+                            rawDeps.any { it.uses_default_features },
+                            rawDeps.flatMap { it.features }.toSet()
                         )
                     }
                 }
