@@ -54,6 +54,7 @@ class CargoArgsParser private constructor(
             when (commandName) {
                 "run" -> parseRunArgs(cargoArgs)
                 "test" -> parseTestArgs(cargoArgs)
+                "with" -> parseRunArgs(cargoArgs)
                 else -> error("Unsupported command")
             }
 
