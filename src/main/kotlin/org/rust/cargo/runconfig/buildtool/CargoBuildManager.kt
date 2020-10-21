@@ -56,7 +56,7 @@ import java.util.concurrent.Future
 object CargoBuildManager {
     private val LOG_NOTIFICATION_GROUP: NotificationGroup = NotificationGroup.logOnlyGroup("Build Log")
 
-    private val BUILDABLE_COMMANDS: List<String> = listOf("run", "test")
+    private val BUILDABLE_COMMANDS: List<String> = listOf("run", "test", "with")
 
     @JvmField
     val CANCELED_BUILD_RESULT: Future<CargoBuildResult> =
@@ -230,6 +230,7 @@ object CargoBuildManager {
         buildConfiguration.command = when (command) {
             "run" -> ParametersListUtil.join("build", *commandArguments.toTypedArray())
             "test" -> ParametersListUtil.join("test", "--no-run", *commandArguments.toTypedArray())
+            "with" -> ParametersListUtil.join("build", *commandArguments.toTypedArray())
             else -> return null
         }
         return buildConfiguration
